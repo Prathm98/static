@@ -24,8 +24,9 @@ jobs:
 
       - name: Trigger workflow
         uses: actions/github-script@v6
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         with:
-          github-token: ${{ secrets.GH_PAT }}
           script: |
             // const fetch = require('node-fetch')
             const ref = 'main' // Branch or tag
