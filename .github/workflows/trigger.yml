@@ -1,0 +1,59 @@
+name: Hello Today Trigger
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install node-fetch
+
+      - name: Trigger workflow
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          script: |
+            import fetch from 'node-fetch'
+            const ref = 'main' // Branch or tag
+            const token = process.env.GH_PAT
+            
+            async function triggerWorkflow() {
+              const url = `https://api.github.com/repos/Prathm98/image_processor/actions/workflows/main.yml/dispatches`
+            
+              const body = {
+                ref
+              }
+            
+              const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                  Accept: 'application/vnd.github.v3+json',
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+              })
+            
+              if (response.ok) {
+                console.log('✅ Workflow triggered successfully!')
+              } else {
+                const error = await response.text()
+                console.error('❌ Failed to trigger workflow:', error)
+              }
+            }
+            
+            triggerWorkflow().catch(console.error)
